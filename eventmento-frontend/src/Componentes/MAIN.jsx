@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MAIN = () => {
+const Main = () => {
     return (
         <div className="min-h-screen flex flex-col bg-white text-gray-900">
             {/* Header */}
@@ -82,4 +82,4 @@ const MAIN = () => {
     );
 };
 
-export default MAIN;
+export default Main;
