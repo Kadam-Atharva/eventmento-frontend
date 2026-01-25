@@ -19,7 +19,7 @@ const Main = () => {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:block">
                         <ul className="flex space-x-8">
-                            {['Features', 'Pricing', 'Contact'].map((item) => (
+                            {['Features', 'Events', 'Contact'].map((item) => (
                                 <li key={item}>
                                     <a 
                                         href={item === 'Contact' ? '#contact' : '#'} 
@@ -51,7 +51,7 @@ const Main = () => {
                 {/* Mobile Menu Dropdown */}
                 {isMobileMenuOpen && (
                     <div className="md:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-md border-b border-blue-100 shadow-lg py-4 px-4 flex flex-col space-y-4">
-                        {['Features', 'Pricing', 'Contact'].map((item) => (
+                        {['Features', 'Events', 'Contact'].map((item) => (
                             <a 
                                 key={item}
                                 href={item === 'Contact' ? '#contact' : '#'} 
@@ -119,6 +119,83 @@ const Main = () => {
                     </div>
                 </section>
 
+                {/* Upcoming Events Section */}
+                <section id="events" className="py-20">
+                    <div className="container mx-auto px-4">
+                        <div className="text-center mb-16">
+                            <h2 className="text-3xl font-bold mb-4">Upcoming Events</h2>
+                            <p className="text-gray-600">Join us at our next gathering.</p>
+                        </div>
+                        <div className="grid md:grid-cols-3 gap-8">
+                            {/* Event Card 1 */}
+                            <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group">
+                                <div className="h-48 bg-blue-100 relative overflow-hidden">
+                                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-6">
+                                        <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">Conference</span>
+                                     </div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <p className="text-blue-600 text-sm font-semibold mb-1">Mar 15, 2025</p>
+                                            <h3 className="text-xl font-bold group-hover:text-blue-600 transition">Tech Summit 2025</h3>
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-600 mb-4 line-clamp-2">The biggest tech conference of the year featuring industry leaders.</p>
+                                    <div className="flex items-center text-gray-500 text-sm">
+                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                         San Francisco, CA
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Event Card 2 */}
+                             <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group">
+                                <div className="h-48 bg-purple-100 relative overflow-hidden">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-6">
+                                        <span className="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">Workshop</span>
+                                     </div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <p className="text-purple-600 text-sm font-semibold mb-1">Apr 02, 2025</p>
+                                            <h3 className="text-xl font-bold group-hover:text-purple-600 transition">Design Masterclass</h3>
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-600 mb-4 line-clamp-2">Learn advanced design principles from top designers.</p>
+                                    <div className="flex items-center text-gray-500 text-sm">
+                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                         New York, NY
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Event Card 3 */}
+                             <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group">
+                                <div className="h-48 bg-green-100 relative overflow-hidden">
+                                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-6">
+                                        <span className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">Networking</span>
+                                     </div>
+                                </div>
+                                <div className="p-6">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <p className="text-green-600 text-sm font-semibold mb-1">Apr 20, 2025</p>
+                                            <h3 className="text-xl font-bold group-hover:text-green-600 transition">Startup Mixer</h3>
+                                        </div>
+                                    </div>
+                                    <p className="text-gray-600 mb-4 line-clamp-2">Connect with founders, investors, and fellow entrepreneurs.</p>
+                                    <div className="flex items-center text-gray-500 text-sm">
+                                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                         Austin, TX
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 {/* Contact Section */}
                 <section id="contact" className="py-20">
                     <div className="container mx-auto px-4 max-w-4xl">
@@ -170,7 +247,7 @@ const Main = () => {
                             <ul className="space-y-4">
                                 <li><a href="#" className="hover:text-white transition cursor-none">Home</a></li>
                                 <li><a href="#" className="hover:text-white transition cursor-none">Features</a></li>
-                                <li><a href="#" className="hover:text-white transition cursor-none">Pricing</a></li>
+                                <li><a href="#events" className="hover:text-white transition cursor-none">Events</a></li>
                                 <li><a href="#contact" className="hover:text-white transition cursor-none">Contact</a></li>
                             </ul>
                         </div>
