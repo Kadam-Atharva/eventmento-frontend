@@ -2,7 +2,10 @@
 import React from 'react';
 import CursorEffect from './CursorEffect';
 
+import { useAuth } from "react-oidc-context";
+
 const Main = () => {
+    const auth = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
     return (
@@ -18,7 +21,7 @@ const Main = () => {
                     
                     {/* Desktop Navigation */}
                     <nav className="hidden md:block">
-                        <ul className="flex space-x-8">
+                        <ul className="flex space-x-8 items-center">
                             {['Features', 'Events', 'Contact'].map((item) => (
                                 <li key={item}>
                                     <a 
@@ -30,6 +33,26 @@ const Main = () => {
                                     </a>
                                 </li>
                             ))}
+                            <li>
+                                {auth.isAuthenticated ? (
+                                    <div className="flex items-center gap-4">
+                                        <span className="text-sm font-medium text-gray-700">Hi, {auth.user?.profile.preferred_username || "User"}</span>
+                                        <button 
+                                            onClick={() => auth.signoutRedirect()}
+                                            className="px-4 py-2 bg-red-50 text-red-600 rounded-full text-sm font-medium hover:bg-red-100 transition"
+                                        >
+                                            Logout
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => auth.signinRedirect()}
+                                        className="px-6 py-2 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition shadow-sm hover:shadow-md"
+                                    >
+                                        Login
+                                    </button>
+                                )}
+                            </li>
                         </ul>
                     </nav>
 
@@ -61,6 +84,24 @@ const Main = () => {
                                 {item}
                             </a>
                         ))}
+                        {auth.isAuthenticated ? (
+                            <>
+                                <div className="px-4 py-2 text-sm text-gray-500">Signed in as {auth.user?.profile.email}</div>
+                                <button 
+                                    onClick={() => auth.signoutRedirect()}
+                                    className="text-left w-full text-red-600 font-medium hover:bg-red-50 px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <button 
+                                onClick={() => auth.signinRedirect()}
+                                className="text-left w-full text-blue-600 font-medium hover:bg-blue-50 px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                            >
+                                Login
+                            </button>
+                        )}
                     </div>
                 )}
             </header>
