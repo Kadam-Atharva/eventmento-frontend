@@ -1,7 +1,12 @@
+"use client";
 import React from 'react';
 import Link from 'next/link';
+import { useAuth } from "react-oidc-context";
+import { useRoles } from '@/hooks/useRoles';
 
 const Sidebar = () => {
+    const auth = useAuth();
+    const { isOrganizer, isStaff, isAttendee } = useRoles();
     return (
         <aside className="w-64 bg-white border-r border-gray-100 min-h-screen fixed left-0 top-0 flex flex-col z-30">
             <div className="p-6 border-b border-gray-100 flex items-center justify-center">
@@ -27,6 +32,13 @@ const Sidebar = () => {
                     <span className="font-medium">Tickets</span>
                 </Link>
 
+                {(isOrganizer || isStaff) && (
+                    <Link href="/dashboard/validate-qr" className="flex items-center px-4 py-3 text-gray-600 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                        <svg className="w-5 h-5 mr-3 text-gray-400 group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 17h.01M16 14h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span className="font-medium">Validate QR</span>
+                    </Link>
+                )}
+
                  <div className="pt-4 mt-4 border-t border-gray-100">
                     <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Settings</p>
                     <Link href="/dashboard/settings" className="flex items-center px-4 py-3 text-gray-600 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors group">
@@ -37,7 +49,10 @@ const Sidebar = () => {
             </nav>
 
             <div className="p-4 border-t border-gray-100">
-                <button className="flex items-center w-full px-4 py-3 text-red-600 rounded-xl hover:bg-red-50 transition-colors group">
+                <button 
+                    onClick={() => auth.signoutRedirect()}
+                    className="flex items-center w-full px-4 py-3 text-red-600 rounded-xl hover:bg-red-50 transition-colors group"
+                >
                     <svg className="w-5 h-5 mr-3 group-hover:text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span className="font-medium">Logout</span>
                 </button>
