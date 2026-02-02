@@ -1,36 +1,62 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TicketValidationMethod } from '@/utils/constants';
 import { useRoles } from '@/hooks/useRoles';
-
-// Mock list matching TicketSummary structure
-const MOCK_TICKETS = [
-    { id: 'TKT-839210', status: 'PURCHASED', ticketType: { id: 'TT1', name: 'VIP', price: 150 } },
-    { id: 'TKT-192834', status: 'CANCELLED', ticketType: { id: 'TT2', name: 'General', price: 50 } },
-];
+import { useAuth } from "react-oidc-context";
+import { listTickets, validateTicket } from '@/domain/domain';
 
 export default function TicketsPage() {
+    const auth = useAuth();
     const [ticketId, setTicketId] = useState('');
     const [validationResult, setValidationResult] = useState(null);
+    const [tickets, setTickets] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const { isOrganizer, isStaff } = useRoles();
+
+    useEffect(() => {
+        const fetchTickets = async () => {
+            if (auth.isAuthenticated && auth.user?.access_token) {
+                try {
+                    const response = await listTickets(auth.user.access_token, 0);
+                    setTickets(response.content || []);
+                } catch (error) {
+                    console.error("Failed to fetch tickets:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            } else if (!auth.isLoading) {
+                 setIsLoading(false);
+            }
+        };
+
+        fetchTickets();
+    }, [auth.isAuthenticated, auth.user?.access_token, auth.isLoading]);
 
     const handleValidate = async (e) => {
         e.preventDefault();
         
-        // Construct request object matching TicketValidationRequest interface
-        const request = {
-            id: ticketId,
-            method: TicketValidationMethod.MANUAL
-        };
+        if (!ticketId) return;
 
-        console.log("Validating Ticket:", request);
+        try {
+             // Construct request object matching TicketValidationRequest interface
+            const request = {
+                id: ticketId,
+                method: TicketValidationMethod.MANUAL
+            };
+            console.log("Validating Ticket:", request);
+            
+            // Call real validation API if token exists
+             if (auth.user?.access_token) {
+                const response = await validateTicket(auth.user.access_token, request);
+                setValidationResult(response);
+             } else {
+                 setValidationResult({ ticketId: ticketId, status: 'INVALID', error: "Not authenticated" });
+             }
 
-        // Mock Validation Logic
-        if (ticketId === 'valid') {
-            setValidationResult({ ticketId: ticketId, status: 'VALID' });
-        } else {
-            setValidationResult({ ticketId: ticketId, status: 'INVALID' });
+        } catch (error) {
+             console.error("Validation failed:", error);
+             setValidationResult({ ticketId: ticketId, status: 'INVALID' });
         }
     };
 
@@ -103,11 +129,24 @@ export default function TicketsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {MOCK_TICKETS.map(ticket => (
+                             {isLoading ? (
+                                <tr>
+                                    <td colSpan="4" className="px-6 py-8 text-center">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                                    </td>
+                                </tr>
+                             ) : tickets.length === 0 ? (
+                                <tr>
+                                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                                        No tickets found.
+                                    </td>
+                                </tr>
+                             ) : (
+                                tickets.map(ticket => (
                                 <tr key={ticket.id} className="hover:bg-gray-50 transition">
                                     <td className="px-6 py-4 whitespace-nowrap font-mono text-sm font-medium text-gray-800">{ticket.id}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{ticket.ticketType.name}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${ticket.ticketType.price}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{ticket.ticketType?.name || 'N/A'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${ticket.ticketType?.price || 0}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                                             ticket.status === 'PURCHASED' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -116,7 +155,8 @@ export default function TicketsPage() {
                                         </span>
                                     </td>
                                 </tr>
-                            ))}
+                            ))
+                             )}
                         </tbody>
                     </table>
                  </div>
