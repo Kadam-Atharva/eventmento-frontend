@@ -2,9 +2,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { EventStatusEnum } from '@/utils/constants';
+import { useRouter } from 'next/navigation';
+import { useAuth } from "react-oidc-context";
+import { EventStatusEnum, createEvent } from '@/domain/domain';
 
 export default function CreateEventPage() {
+    const auth = useAuth();
+    const router = useRouter();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
     const [formData, setFormData] = useState({
         name: '',
         start: '',
@@ -13,8 +19,20 @@ export default function CreateEventPage() {
         salesStart: '',
         salesEnd: '',
         status: EventStatusEnum.DRAFT,
+        coverImage: '',
         ticketTypes: []
     });
+
+    const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData(prev => ({ ...prev, coverImage: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const addTicketType = () => {
         setFormData({
@@ -45,10 +63,49 @@ export default function CreateEventPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Submitting Event Request:', formData);
-        // TODO: Call createEvent API here
-        // await createEvent(accessToken, formData);
-        alert('Event Created! (Check console for data)');
+        
+        if (!auth.user?.access_token) {
+            alert("You must be logged in to create an event");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+             // Process coverImage to strip metadata prefix if present
+             let processedCoverImage = formData.coverImage;
+             if (processedCoverImage && processedCoverImage.includes(',')) {
+                 processedCoverImage = processedCoverImage.split(',')[1];
+             }
+
+             // Convert string dates to Date objects/ISO strings if needed by backend, 
+             // or just send as-is if backend accepts it. 
+             // The interface said Date, so wrapping in new Date() is safer for generic backend.
+             const requestData = {
+                ...formData,
+                coverImage: processedCoverImage,
+                start: formData.start ? new Date(formData.start) : undefined,
+                end: formData.end ? new Date(formData.end) : undefined,
+                salesStart: formData.salesStart ? new Date(formData.salesStart) : undefined,
+                salesEnd: formData.salesEnd ? new Date(formData.salesEnd) : undefined,
+             };
+            
+            console.log("SENDING EVENT DATA TO BACKEND:", requestData);
+            if (requestData.coverImage) {
+                console.log("Cover Image Length:", requestData.coverImage.length);
+            } else {
+                console.warn("No cover image in payload!");
+            }
+
+            await createEvent(auth.user.access_token, requestData);
+            alert('Event Created Successfully!');
+            router.push('/dashboard/events');
+        } catch (error) {
+            console.error("Failed to create event:", error);
+            alert(`Failed to create event: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -161,6 +218,39 @@ export default function CreateEventPage() {
                     </div>
                 </div>
 
+                {/* Cover Image Upload */}
+                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                    <h3 className="text-lg font-bold text-gray-800 border-b border-gray-100 pb-4 mb-6 flex items-center">
+                        <svg className="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        Cover Image
+                    </h3>
+                    
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-center w-full">
+                            <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                {formData.coverImage ? (
+                                    <div className="relative w-full h-full">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={formData.coverImage} alt="Cover Preview" className="w-full h-full object-cover rounded-lg" />
+                                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity rounded-lg">
+                                            <p className="text-white font-medium">Click to Change</p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                        </svg>
+                                        <p className="mb-2 text-sm text-gray-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                                        <p className="text-xs text-gray-500">SVG, PNG, JPG or GIF (MAX. 800x400px)</p>
+                                    </div>
+                                )}
+                                <input id="dropzone-file" type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                            </label>
+                        </div> 
+                    </div>
+                </div>
+
                 {/* Ticket Types */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
                     <div className="flex justify-between items-center border-b border-gray-100 pb-4 mb-6">
@@ -243,8 +333,8 @@ export default function CreateEventPage() {
 
                 <div className="flex justify-end gap-4">
                     <button type="button" className="px-8 py-3 rounded-full font-bold text-gray-600 hover:bg-gray-100 transition">Discard</button>
-                    <button type="submit" className="px-8 py-3 rounded-full font-bold bg-blue-600 text-white shadow-lg hover:shadow-xl hover:bg-blue-700 transition transform hover:-translate-y-0.5">
-                        Create Event
+                    <button type="submit" disabled={isSubmitting} className={`px-8 py-3 rounded-full font-bold text-white shadow-lg transition transform ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:shadow-xl hover:bg-blue-700 hover:-translate-y-0.5'}`}>
+                        {isSubmitting ? 'Creating...' : 'Create Event'}
                     </button>
                 </div>
             </form>
