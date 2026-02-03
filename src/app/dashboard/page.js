@@ -1,8 +1,36 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { useAuth } from "react-oidc-context";
+import { listEvents } from '@/domain/domain';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
+    const auth = useAuth();
+    const [recentEvents, setRecentEvents] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchRecentEvents = async () => {
+             if (auth.isAuthenticated && auth.user?.access_token) {
+                try {
+                    // Fetch small page size for "Recent" list
+                    const response = await listEvents(auth.user.access_token, 0); 
+                    // Take first few items
+                    setRecentEvents((response.content || []).slice(0, 5));
+                } catch (error) {
+                    console.error("Failed to fetch recent events:", error);
+                } finally {
+                    setIsLoading(false);
+                }
+            } else if (!auth.isLoading) {
+                 setIsLoading(false);
+            }
+        };
+        fetchRecentEvents();
+    }, [auth.isAuthenticated, auth.user?.access_token, auth.isLoading]);
+
     return (
         <div className="space-y-6">
             {/* Stats Grid */}
@@ -15,8 +43,8 @@ export default function DashboardPage() {
                         </div>
                     </div>
                     <div className="flex items-baseline">
-                        <span className="text-3xl font-bold text-gray-800">12</span>
-                        <span className="ml-2 text-sm text-green-500">+2 this month</span>
+                        <span className="text-3xl font-bold text-gray-800">{recentEvents.length}</span>
+                        <span className="ml-2 text-sm text-green-500">Active</span>
                     </div>
                 </div>
 
@@ -28,8 +56,8 @@ export default function DashboardPage() {
                         </div>
                     </div>
                     <div className="flex items-baseline">
-                        <span className="text-3xl font-bold text-gray-800">1,240</span>
-                        <span className="ml-2 text-sm text-green-500">+18% vs last month</span>
+                        <span className="text-3xl font-bold text-gray-800">-</span>
+                        <span className="ml-2 text-sm text-gray-400">Not implemented</span>
                     </div>
                 </div>
 
@@ -41,8 +69,8 @@ export default function DashboardPage() {
                         </div>
                     </div>
                      <div className="flex items-baseline">
-                        <span className="text-3xl font-bold text-gray-800">$45.2k</span>
-                        <span className="ml-2 text-sm text-green-500">+12% vs last month</span>
+                        <span className="text-3xl font-bold text-gray-800">-</span>
+                        <span className="ml-2 text-sm text-gray-400">Not implemented</span>
                     </div>
                 </div>
             </div>
@@ -51,7 +79,7 @@ export default function DashboardPage() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center">
                     <h2 className="text-lg font-bold text-gray-800">Recent Events</h2>
-                    <button className="text-blue-600 text-sm font-medium hover:text-blue-700 transition">View All</button>
+                    <Link href="/dashboard/events" className="text-blue-600 text-sm font-medium hover:text-blue-700 transition">View All</Link>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full">
@@ -60,36 +88,43 @@ export default function DashboardPage() {
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Event Name</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tickets Sold</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type Count</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                             <tr className="hover:bg-gray-50 transition">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <div className="flex items-center">
-                                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs mr-3">TS</div>
-                                        <div className="text-sm font-medium text-gray-900">Tech Summit 2025</div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Mar 15, 2025</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700">Published</span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">450/500</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50 transition">
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                     <div className="flex items-center">
-                                        <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-xs mr-3">DM</div>
-                                        <div className="text-sm font-medium text-gray-900">Design Masterclass</div>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">Apr 02, 2025</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                    <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">Draft</span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">0/50</td>
-                            </tr>
+                             {recentEvents.length === 0 ? (
+                                <tr>
+                                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                                        No recent events found.
+                                    </td>
+                                </tr>
+                             ) : (
+                                recentEvents.map(event => (
+                                    <tr key={event.id} className="hover:bg-gray-50 transition">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs mr-3">
+                                                    {event.name.substring(0, 2).toUpperCase()}
+                                                </div>
+                                                <div className="text-sm font-medium text-gray-900">{event.name}</div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            {event.start ? new Date(event.start).toLocaleDateString() : 'TBD'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                                event.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                                            }`}>
+                                                {event.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                            {event.ticketTypes?.length || 0}
+                                        </td>
+                                    </tr>
+                                ))
+                             )}
                         </tbody>
                     </table>
                 </div>
