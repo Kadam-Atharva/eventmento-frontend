@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useAuth } from "react-oidc-context";
 import { listEvents } from '@/domain/domain';
 import { useEffect, useState } from 'react';
+import EventCard from '@/Componentes/Dashboard/EventCard';
+import SearchEvents from '@/Componentes/Dashboard/SearchEvents';
 
 export default function DashboardPage() {
     const auth = useAuth();
@@ -76,59 +78,26 @@ export default function DashboardPage() {
             </div>
 
             {/* Recent Events Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+            <div>
+                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-lg font-bold text-gray-800">Recent Events</h2>
                     <Link href="/dashboard/events" className="text-blue-600 text-sm font-medium hover:text-blue-700 transition">View All</Link>
                 </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Event Name</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type Count</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                             {recentEvents.length === 0 ? (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                                        No recent events found.
-                                    </td>
-                                </tr>
-                             ) : (
-                                recentEvents.map(event => (
-                                    <tr key={event.id} className="hover:bg-gray-50 transition">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs mr-3">
-                                                    {event.name.substring(0, 2).toUpperCase()}
-                                                </div>
-                                                <div className="text-sm font-medium text-gray-900">{event.name}</div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                            {event.start ? new Date(event.start).toLocaleDateString() : 'TBD'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                                                event.status === 'PUBLISHED' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                                            }`}>
-                                                {event.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                            {event.ticketTypes?.length || 0}
-                                        </td>
-                                    </tr>
-                                ))
-                             )}
-                        </tbody>
-                    </table>
-                </div>
+                {recentEvents.length === 0 ? (
+                    <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+                        <p className="text-gray-500">No recent events found.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {recentEvents.map(event => (
+                            <EventCard key={event.id} event={event} />
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {/* Search New Events Section */}
+            <SearchEvents />
         </div>
     );
 }
