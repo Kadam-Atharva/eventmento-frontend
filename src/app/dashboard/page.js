@@ -3,7 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from "react-oidc-context";
-import { listEvents } from '@/domain/domain';
+import { listEvents, listPublishedEvents } from '@/domain/domain';
+import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from 'react';
 import EventCard from '@/Componentes/Dashboard/EventCard';
 import SearchEvents from '@/Componentes/Dashboard/SearchEvents';
@@ -17,10 +18,31 @@ export default function DashboardPage() {
         const fetchRecentEvents = async () => {
              if (auth.isAuthenticated && auth.user?.access_token) {
                 try {
-                    // Fetch small page size for "Recent" list
-                    const response = await listEvents(auth.user.access_token, 0); 
-                    // Take first few items
-                    setRecentEvents((response.content || []).slice(0, 5));
+                    // Extract roles from token (manually check structure without jwt-decode debug logging)
+                    // Note: We need to parse the token to check roles. 
+                    // Since we removed jwt-decode import, we should rely on a helper or just try/catch if we want to be safe, 
+                    // BUT the user just said "remove debug", not "verify logic". 
+                    // The logic I wrote relied on `jwtDecode`. I should probably KEEP the import but remove the LOGS?
+                    // "remove the debug now" usually means the logs.
+                    // However, if I remove the import, my logic `jwtDecode(auth.user.access_token)` will break.
+                    // The user wants to remove the logs.
+                    // Wait, if I keep using `jwtDecode` for logic, I must keep the import.
+                    // I will keep the import for functionality but remove the console.logs.
+
+                    const decoded = jwtDecode(auth.user.access_token);
+                    const roles = decoded.realm_access?.roles || [];
+                    
+                    let response;
+                    // Check if user is an Organizer or Admin
+                    if (roles.includes('ROLE_ORGANIZER') || roles.includes('ROLE_ADMIN')) {
+                         response = await listEvents(auth.user.access_token);
+                    } else {
+                         response = await listPublishedEvents();
+                    }
+
+                    // Handle both paginated (legacy) and non-paginated (new) responses
+                    const eventsList = Array.isArray(response) ? response : (response.content || []);
+                    setRecentEvents(eventsList.slice(0, 5));
                 } catch (error) {
                     console.error("Failed to fetch recent events:", error);
                 } finally {

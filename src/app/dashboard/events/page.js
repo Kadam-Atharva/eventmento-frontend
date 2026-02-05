@@ -4,8 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRoles } from '@/hooks/useRoles';
 import { useAuth } from "react-oidc-context";
-import { listEvents } from '@/domain/domain';
-
+import { listEvents, listPublishedEvents } from '@/domain/domain';
+import { jwtDecode } from "jwt-decode";
 
 
 export default function EventsPage() {
@@ -18,8 +18,18 @@ export default function EventsPage() {
         const fetchEvents = async () => {
             if (auth.isAuthenticated && auth.user?.access_token) {
                 try {
-                    const response = await listEvents(auth.user.access_token, 0); // Fetch page 0
-                    setEvents(response.content || []);
+                    const decoded = jwtDecode(auth.user.access_token);
+                    const roles = decoded.realm_access?.roles || [];
+                    
+                    let response;
+                    if (roles.includes('ROLE_ORGANIZER') || roles.includes('ROLE_ADMIN')) {
+                        response = await listEvents(auth.user.access_token);
+                    } else {
+                        response = await listPublishedEvents();
+                    }
+
+                    const eventsList = Array.isArray(response) ? response : (response.content || []);
+                    setEvents(eventsList);
                 } catch (error) {
                     console.error("Failed to fetch events:", error);
                 } finally {
