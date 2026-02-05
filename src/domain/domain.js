@@ -74,8 +74,8 @@ export const updateEvent = async (accessToken, id, request) => {
   }
 };
 
-export const listEvents = async (accessToken, page) => {
-  const response = await fetch(`/api/v1/events?page=${page}&size=6`, { // Keeping the size from api.js or snippet? Snippet said 2. api.js said 6. I'll stick to snippet or reasonable default. User snippet had 2. I'll use 6 as it's more practical, or stuck to user snippet? User snippet: size=2. I'll use 6 to match existing api.js behavior if I can, but user snippet had 2. I'll use 6 because 2 is very small.
+export const listEvents = async (accessToken) => {
+  const response = await fetch(`/api/v1/events`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -83,18 +83,32 @@ export const listEvents = async (accessToken, page) => {
     },
   });
 
-  const responseBody = await response.json();
-
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
+    const text = await response.text();
+    console.error(`API Error: ${response.status} ${response.statusText}`, text);
+    let errorMsg = `An unknown error occurred (${response.status})`;
+    try {
+      const json = JSON.parse(text);
+      if (isErrorResponse(json)) {
+        errorMsg = json.error;
+      }
+    } catch (e) {
+      // already logged
     }
+    throw new Error(errorMsg);
   }
 
-  return responseBody;
+  const text = await response.text();
+  if (!text) {
+    return []; 
+  }
+
+  try {
+      return JSON.parse(text);
+  } catch(e) {
+       console.error("Failed to parse JSON response:", text);
+       throw new Error("Invalid JSON response from server");
+  }
 };
 
 export const getEvent = async (accessToken, id) => {
@@ -140,31 +154,45 @@ export const deleteEvent = async (accessToken, id) => {
   }
 };
 
-export const listPublishedEvents = async (page) => {
-  const response = await fetch(`/api/v1/published-events?page=${page}&size=4`, {
+export const listPublishedEvents = async () => {
+  const response = await fetch(`/api/v1/published-events`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
     },
   });
 
-  const responseBody = await response.json();
-
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
+    const text = await response.text();
+    console.error(`API Error: ${response.status} ${response.statusText}`, text);
+    let errorMsg = `An unknown error occurred (${response.status})`;
+    try {
+      const json = JSON.parse(text);
+      if (isErrorResponse(json)) {
+        errorMsg = json.error;
+      }
+    } catch (e) {
+      // logged
     }
+    throw new Error(errorMsg);
   }
 
-  return responseBody;
+  const text = await response.text();
+  if (!text) {
+    return [];
+  }
+
+  try {
+      return JSON.parse(text);
+  } catch(e) {
+       console.error("Failed to parse JSON response:", text);
+       throw new Error("Invalid JSON response from server");
+  }
 };
 
-export const searchPublishedEvents = async (query, page) => {
+export const searchPublishedEvents = async (query) => {
   const response = await fetch(
-    `/api/v1/published-events?q=${query}&page=${page}&size=4`,
+    `/api/v1/published-events?q=${query}`,
     {
       method: "GET",
       headers: {
@@ -173,18 +201,32 @@ export const searchPublishedEvents = async (query, page) => {
     },
   );
 
-  const responseBody = await response.json();
-
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
+    const text = await response.text();
+    console.error(`API Error: ${response.status} ${response.statusText}`, text);
+    let errorMsg = `An unknown error occurred (${response.status})`;
+    try {
+      const json = JSON.parse(text);
+      if (isErrorResponse(json)) {
+        errorMsg = json.error;
+      }
+    } catch (e) {
+       // logged
     }
+    throw new Error(errorMsg);
   }
 
-  return responseBody;
+  const text = await response.text();
+  if (!text) {
+    return [];
+  }
+
+  try {
+      return JSON.parse(text);
+  } catch(e) {
+       console.error("Failed to parse JSON response:", text);
+       throw new Error("Invalid JSON response from server");
+  }
 };
 
 export const getPublishedEvent = async (id) => {
@@ -232,8 +274,8 @@ export const purchaseTicket = async (accessToken, eventId, ticketTypeId) => {
   }
 };
 
-export const listTickets = async (accessToken, page) => {
-  const response = await fetch(`/api/v1/tickets?page=${page}&size=8`, {
+export const listTickets = async (accessToken) => {
+  const response = await fetch(`/api/v1/tickets`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -241,18 +283,32 @@ export const listTickets = async (accessToken, page) => {
     },
   });
 
-  const responseBody = await response.json();
-
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
+    const text = await response.text();
+    console.error(`API Error: ${response.status} ${response.statusText}`, text);
+    let errorMsg = `An unknown error occurred (${response.status})`;
+    try {
+      const json = JSON.parse(text);
+      if (isErrorResponse(json)) {
+        errorMsg = json.error;
+      }
+    } catch (e) {
+       // logged
     }
+    throw new Error(errorMsg);
   }
 
-  return responseBody;
+  const text = await response.text();
+  if (!text) {
+    return [];
+  }
+
+  try {
+      return JSON.parse(text);
+  } catch(e) {
+       console.error("Failed to parse JSON response:", text);
+       throw new Error("Invalid JSON response from server");
+  }
 };
 
 export const getTicket = async (accessToken, id) => {

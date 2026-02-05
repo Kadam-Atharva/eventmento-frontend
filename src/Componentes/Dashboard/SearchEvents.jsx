@@ -14,8 +14,9 @@ export default function SearchEvents() {
 
         setIsLoading(true);
         try {
-            const response = await searchPublishedEvents(query, 0); // Page 0
-            setResults(response.content || []);
+            const response = await searchPublishedEvents(query); 
+            // Handle both paginated and non-paginated responses
+            setResults(Array.isArray(response) ? response : (response.content || []));
         } catch (error) {
             console.error("Search failed:", error);
         } finally {
