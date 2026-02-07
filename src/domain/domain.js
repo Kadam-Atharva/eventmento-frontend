@@ -372,3 +372,26 @@ export const validateTicket = async (accessToken, request) => {
 
   return responseBody;
 };
+
+export const getCurrentUser = async (accessToken) => {
+  const response = await fetch(`/user/me`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const responseBody = await response.json();
+
+  if (!response.ok) {
+    if (isErrorResponse(responseBody)) {
+      throw new Error(responseBody.error);
+    } else {
+      console.error(JSON.stringify(responseBody));
+      throw new Error("An unknown error occurred");
+    }
+  }
+
+  return responseBody;
+};
