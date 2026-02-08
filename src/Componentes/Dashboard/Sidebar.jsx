@@ -2,11 +2,15 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from "react-oidc-context";
+import { useCurrentUser } from '@/hooks/useUser';
 import { useRoles } from '@/hooks/useRoles';
+import EventImage from '../Common/EventImage';
 
 const Sidebar = () => {
     const auth = useAuth();
     const { isOrganizer, isStaff, isAttendee } = useRoles();
+    const { user } = useCurrentUser();
+
     return (
         <aside className="w-64 bg-white border-r border-gray-100 min-h-screen fixed left-0 top-0 flex flex-col z-30">
             <div className="p-6 border-b border-gray-100 flex items-center justify-center">
@@ -48,12 +52,31 @@ const Sidebar = () => {
                 </div>
             </nav>
 
-            <div className="p-4 border-t border-gray-100">
+            <div className="p-4 border-t border-gray-100 bg-gray-50">
+                {user && (
+                    <div className="flex items-center mb-4 px-2">
+                        <div className="w-10 h-10 rounded-full overflow-hidden mr-3 border border-gray-200 bg-white">
+                            <EventImage 
+                                src={user.profileImage} 
+                                alt={user.name} 
+                                className="w-full h-full object-cover"
+                            />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">
+                                {user.name}
+                            </p>
+                            <p className="text-xs text-gray-500 truncate">
+                                {user.email}
+                            </p>
+                        </div>
+                    </div>
+                )}
                 <button 
                     onClick={() => auth.signoutRedirect()}
-                    className="flex items-center w-full px-4 py-3 text-red-600 rounded-xl hover:bg-red-50 transition-colors group"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 rounded-lg hover:bg-red-100 transition-colors group"
                 >
-                    <svg className="w-5 h-5 mr-3 group-hover:text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <svg className="w-4 h-4 mr-2 group-hover:text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <span className="font-medium">Logout</span>
                 </button>
             </div>
