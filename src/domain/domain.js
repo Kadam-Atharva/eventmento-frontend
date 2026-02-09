@@ -120,18 +120,27 @@ export const getEvent = async (accessToken, id) => {
     },
   });
 
-  const responseBody = await response.json();
-
+  const text = await response.text();
+  
   if (!response.ok) {
-    if (isErrorResponse(responseBody)) {
-      throw new Error(responseBody.error);
-    } else {
-      console.error(JSON.stringify(responseBody));
-      throw new Error("An unknown error occurred");
-    }
+      console.error(`API Error: ${response.status} ${response.statusText}`, text);
+      try {
+          const json = JSON.parse(text);
+          if (isErrorResponse(json)) {
+              throw new Error(json.error);
+          }
+      } catch (e) {
+          // If plain text or empty, fall through
+      }
+      throw new Error(`An unknown error occurred (${response.status})`);
   }
 
-  return responseBody;
+  try {
+      return text ? JSON.parse(text) : null;
+  } catch (e) {
+      console.error("Failed to parse JSON response:", text);
+      throw new Error("Invalid JSON response from server");
+  }
 };
 
 export const deleteEvent = async (accessToken, id) => {
