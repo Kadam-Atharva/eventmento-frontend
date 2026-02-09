@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import EventImage from "../Common/EventImage";
 
 export default function EventCard({ event, footer }) {
   if (!event) return null;
@@ -7,30 +8,11 @@ export default function EventCard({ event, footer }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
       <div className="h-32 bg-gray-100 relative">
-        {event.coverImage ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={event.coverImage}
-            alt={event.name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            <svg
-              className="w-10 h-10"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-              ></path>
-            </svg>
-          </div>
-        )}
+        <EventImage 
+          src={event.coverImage} 
+          alt={event.name} 
+          className="w-full h-full object-cover"
+        />
         <div className="absolute top-4 right-4">
           <span
             className={`px-2 py-1 text-xs font-semibold rounded-full ${
@@ -49,6 +31,11 @@ export default function EventCard({ event, footer }) {
             {event.start ? new Date(event.start).toLocaleDateString() : "TBD"}
           </p>
           <h3 className="text-lg font-bold text-gray-900 mb-1">{event.name}</h3>
+          
+          <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+            {event.description || "No description provided."}
+          </p>
+
           <p className="text-sm text-gray-500 flex items-center">
             <svg
               className="w-4 h-4 mr-1"
