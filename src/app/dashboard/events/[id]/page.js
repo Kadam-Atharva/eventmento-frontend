@@ -22,6 +22,15 @@ export default function EventDashboardDetails() {
             const fetchEvent = async () => {
                 try {
                     const data = await getEvent(auth.user.access_token, id);
+                    if (data?.coverImage) {
+                         console.log("Dashboard Event Data - Cover Image Found:", {
+                             length: data.coverImage.length,
+                             startsWithData: data.coverImage.startsWith("data:image"),
+                             preview: data.coverImage.substring(0, 50) + "..."
+                         });
+                    } else {
+                        console.warn("Dashboard Event Data missing coverImage");
+                    }
                     setEvent(data);
                 } catch (err) {
                     console.error("Failed to load event", err);
