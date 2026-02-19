@@ -24,7 +24,16 @@ export default function EventDetailsPage() {
             const fetchEvent = async () => {
                 try {
                     const data = await getPublishedEvent(id);
-                    console.log("Event Data:", data); // Debugging: Check coverImage structure
+                    console.log("Event Data:", data); 
+                    if (data?.coverImage) {
+                         console.log("Cover Image Found:", {
+                             length: data.coverImage.length,
+                             startsWithData: data.coverImage.startsWith("data:image"),
+                             preview: data.coverImage.substring(0, 50) + "..."
+                         });
+                    } else {
+                        console.warn("Event Data missing coverImage");
+                    }
                     setEvent(data);
                 } catch (err) {
                     console.error("Failed to load event", err);
