@@ -1,12 +1,36 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import CursorEffect from "./CursorEffect";
 
 import { useAuth } from "react-oidc-context";
+import { listPublishedEvents } from "@/domain/domain";
+import EventImage from "@/Componentes/Common/EventImage";
 
 const Main = () => {
   const auth = useAuth();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [events, setEvents] = useState([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await listPublishedEvents();
+        const eventsList = Array.isArray(response)
+          ? response
+          : response.content || [];
+        // Get up to 3 upcoming events for the landing page
+        setEvents(eventsList.slice(0, 3));
+      } catch (error) {
+        console.error("Failed to fetch published events:", error);
+      } finally {
+        setIsLoadingEvents(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
@@ -235,152 +259,103 @@ const Main = () => {
               <h2 className="text-3xl font-bold mb-4">Upcoming Events</h2>
               <p className="text-gray-600">Join us at our next gathering.</p>
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              {/* Event Card 1 */}
-              <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group">
-                <div className="h-48 bg-blue-100 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-6">
-                    <span className="bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      Conference
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-blue-600 text-sm font-semibold mb-1">
-                        Mar 15, 2025
-                      </p>
-                      <h3 className="text-xl font-bold group-hover:text-blue-600 transition">
-                        Tech Summit 2025
-                      </h3>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 mb-4 line-clamp-2">
-                    The biggest tech conference of the year featuring industry
-                    leaders.
-                  </p>
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      ></path>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                    </svg>
-                    San Francisco, CA
-                  </div>
-                </div>
-              </div>
 
-              {/* Event Card 2 */}
-              <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group">
-                <div className="h-48 bg-purple-100 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-6">
-                    <span className="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      Workshop
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-purple-600 text-sm font-semibold mb-1">
-                        Apr 02, 2025
-                      </p>
-                      <h3 className="text-xl font-bold group-hover:text-purple-600 transition">
-                        Design Masterclass
-                      </h3>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 mb-4 line-clamp-2">
-                    Learn advanced design principles from top designers.
-                  </p>
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      ></path>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                    </svg>
-                    New York, NY
-                  </div>
-                </div>
+            {isLoadingEvents ? (
+              <div className="flex justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
+            ) : events.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto">
+                <p className="text-gray-500 text-lg">
+                  Stay tuned! Exciting events are coming soon.
+                </p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-3 gap-8">
+                {events.map((event, index) => {
+                  const colors = [
+                    {
+                      bg: "bg-blue-100",
+                      text: "text-blue-600",
+                      badge: "bg-blue-600",
+                      hoverGroup: "group-hover:text-blue-600",
+                    },
+                    {
+                      bg: "bg-purple-100",
+                      text: "text-purple-600",
+                      badge: "bg-purple-600",
+                      hoverGroup: "group-hover:text-purple-600",
+                    },
+                    {
+                      bg: "bg-green-100",
+                      text: "text-green-600",
+                      badge: "bg-green-600",
+                      hoverGroup: "group-hover:text-green-600",
+                    },
+                  ];
+                  const colorScheme = colors[index % colors.length];
 
-              {/* Event Card 3 */}
-              <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group">
-                <div className="h-48 bg-green-100 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent flex items-end p-6">
-                    <span className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      Networking
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-green-600 text-sm font-semibold mb-1">
-                        Apr 20, 2025
-                      </p>
-                      <h3 className="text-xl font-bold group-hover:text-green-600 transition">
-                        Startup Mixer
-                      </h3>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 mb-4 line-clamp-2">
-                    Connect with founders, investors, and fellow entrepreneurs.
-                  </p>
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                      ></path>
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                      ></path>
-                    </svg>
-                    Austin, TX
-                  </div>
-                </div>
+                  return (
+                    <Link key={event.id || index} href={`/events/${event.id}`}>
+                      <div className="bg-white rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group flex flex-col h-full cursor-pointer">
+                        <div className={`h-48 ${colorScheme.bg} relative overflow-hidden shrink-0`}>
+                          <EventImage 
+                              src={event.coverImage} 
+                              alt={event.name} 
+                              className="w-full h-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent flex items-end p-6">
+                            <span className={`${colorScheme.badge} text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm`}>
+                              {event.status === 'PUBLISHED' ? 'Upcoming' : event.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-6 flex flex-col flex-grow">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <p className={`${colorScheme.text} text-sm font-semibold mb-1`}>
+                                {event.start ? new Date(event.start).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'TBD'}
+                              </p>
+                              <h3 className={`text-xl font-bold ${colorScheme.hoverGroup} transition line-clamp-1`}>
+                                {event.name}
+                              </h3>
+                            </div>
+                          </div>
+                          <p className="text-gray-600 mb-6 line-clamp-2 flex-grow">
+                            {event.description || "Join us for this exciting event!"}
+                          </p>
+                          <div className="flex items-center text-gray-500 text-sm mt-auto justify-between border-t border-gray-100 pt-4">
+                            <div className="flex items-center truncate max-w-[60%]">
+                              <svg
+                                className="w-4 h-4 mr-2 shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                ></path>
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                                ></path>
+                              </svg>
+                              <span className="truncate">{event.venue || "TBD"}</span>
+                            </div>
+                            <span className={`text-sm font-medium ${colorScheme.text} ${colorScheme.hoverGroup}`}>View Details &rarr;</span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
         </section>
 
