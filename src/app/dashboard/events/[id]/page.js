@@ -34,6 +34,12 @@ export default function EventDashboardDetails() {
                     setEvent(data);
                 } catch (err) {
                     console.error("Failed to load event", err);
+                    // Fallback: If user is not the organizer (404/403), redirect them to the public attendee view
+                    if (err.message?.includes('404') || err.message?.includes('403') || err.message?.includes('Not Found') || err.message?.includes('Forbidden')) {
+                        console.log("Redirecting to public attendee view...");
+                        router.push(`/events/${id}`);
+                        return;
+                    }
                     setError("Failed to load event details.");
                 } finally {
                     setLoading(false);
