@@ -146,14 +146,22 @@ export const validateTicket = async (accessToken, request) => {
         body: JSON.stringify(request),
     });
 
-    const responseBody = await response.json();
+    const text = await response.text();
+    let responseBody = null;
+    if (text) {
+        try {
+            responseBody = JSON.parse(text);
+        } catch (e) {
+            console.error("Failed to parse JSON response:", text);
+        }
+    }
 
     if (!response.ok) {
-        if (isErrorResponse(responseBody)) {
+        if (responseBody && isErrorResponse(responseBody)) {
             throw new Error(responseBody.error);
         } else {
-            console.error(JSON.stringify(responseBody));
-            throw new Error("An unknown error occurred");
+            console.error(text);
+            throw new Error(`An unknown error occurred (${response.status})`);
         }
     }
 
