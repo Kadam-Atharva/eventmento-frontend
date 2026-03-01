@@ -111,10 +111,10 @@ export default function EventDetailsPage() {
             {error || "The event you are looking for does not exist."}
           </p>
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/")}
             className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Go to Dashboard
+            Back to Home
           </button>
         </div>
       </div>
@@ -127,7 +127,7 @@ export default function EventDetailsPage() {
       <div className="relative h-96 w-full bg-gray-900">
         <div className="absolute top-6 left-6 z-20">
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/")}
             className="flex items-center text-white/80 hover:text-white bg-black/30 hover:bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm transition-all"
           >
             <svg
@@ -143,7 +143,7 @@ export default function EventDetailsPage() {
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               ></path>
             </svg>
-            Back to Dashboard
+            Back to Home
           </button>
         </div>
         <EventImage
