@@ -1,13 +1,15 @@
 import React from "react";
 import Link from "next/link";
 import EventImage from "../Common/EventImage";
+import { useRoles } from "@/hooks/useRoles";
 
 export default function EventCard({ event, footer }) {
+  const { isOrganizer } = useRoles();
   if (!event) return null;
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
-      <div className="h-32 bg-gray-100 relative">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition flex flex-col h-full">
+      <div className="h-48 bg-gray-100 relative shrink-0">
         <EventImage 
           src={event.coverImage} 
           alt={event.name} 
@@ -25,8 +27,8 @@ export default function EventCard({ event, footer }) {
           </span>
         </div>
       </div>
-      <div className="p-5">
-        <div className="mb-4">
+      <div className="p-5 flex flex-col grow">
+        <div className="mb-4 grow">
           <p className="text-sm text-blue-600 font-medium mb-1">
             {event.start ? new Date(event.start).toLocaleDateString() : "TBD"}
           </p>
@@ -38,7 +40,7 @@ export default function EventCard({ event, footer }) {
 
           <p className="text-sm text-gray-500 flex items-center">
             <svg
-              className="w-4 h-4 mr-1"
+              className="w-4 h-4 mr-1 shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -56,15 +58,15 @@ export default function EventCard({ event, footer }) {
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
               ></path>
             </svg>
-            {event.venue}
+            <span className="truncate">{event.venue}</span>
           </p>
         </div>
         {footer ? (
-          <div className="border-t border-gray-100 pt-4">
+          <div className="border-t border-gray-100 pt-4 shrink-0 mt-auto">
             {footer}
           </div>
         ) : (
-          <div className="border-t border-gray-100 pt-4 flex justify-between items-center text-sm">
+          <div className="border-t border-gray-100 pt-4 flex justify-between items-center text-sm shrink-0 mt-auto">
             <span className="text-gray-600">
               <span className="font-semibold text-gray-900">
                 {event.ticketTypes?.length || 0}
@@ -72,10 +74,10 @@ export default function EventCard({ event, footer }) {
               Ticket Types
             </span>
             <Link
-              href={`/dashboard/events/${event.id}`}
+              href={isOrganizer ? `/dashboard/events/${event.id}` : `/events/${event.id}`}
               className="text-blue-600 font-medium hover:text-blue-700"
             >
-              Manage
+              {isOrganizer ? "Manage" : "View Details"}
             </Link>
           </div>
         )}
