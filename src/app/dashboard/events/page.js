@@ -109,7 +109,7 @@ export default function EventsPage() {
                                     {isOrganizer ? (
                                         <Link href={`/dashboard/events/${event.id}`} className="text-blue-600 font-medium hover:text-blue-700">Manage</Link>
                                     ) : (
-                                        <Link href={`/events/${event.id}`} className="text-blue-600 font-medium hover:text-blue-700">View Details</Link>
+                                        <Link href={`/events/${event.id}?source=dashboard`} className="text-blue-600 font-medium hover:text-blue-700">View Details</Link>
                                     )}
                                 </div>
                             </div>
