@@ -4,15 +4,18 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "react-oidc-context";
-import { EventStatusEnum, getEvent, updateEvent } from "@/domain/domain";
+import { EventStatusEnum, getEvent, updateEvent, deleteEvent } from "@/domain/domain";
+import { useEventRole } from "@/hooks/useEventRole";
 
 export default function EditEventPage() {
   const auth = useAuth();
   const router = useRouter();
   const params = useParams();
   const { id } = params;
+  const { isOrganizer, isStaff, isLoading: roleLoading } = useEventRole(id);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -67,6 +70,13 @@ export default function EditEventPage() {
          setIsLoading(false);
      }
   }, [auth.isAuthenticated, auth.user?.access_token, auth.isLoading, id]);
+
+  useEffect(() => {
+     if (!roleLoading && !isOrganizer && !isStaff) {
+         alert("You do not have permission to edit this event.");
+         router.push(`/dashboard/events/${id}`);
+     }
+  }, [roleLoading, isOrganizer, isStaff, id, router]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -123,8 +133,33 @@ export default function EditEventPage() {
     }
   };
 
-  if (isLoading) return <div className="p-8 text-center text-gray-500">Loading event data...</div>;
+  const handleDelete = async () => {
+    if (!auth.user?.access_token) {
+      alert("You must be logged in to delete an event");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this event? This action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteEvent(auth.user.access_token, id);
+      alert("Event deleted successfully.");
+      router.push("/dashboard/events");
+    } catch (err) {
+      console.error("Failed to delete event:", err);
+      alert(`Failed to delete event: ${err.message}`);
+      setIsDeleting(false);
+    }
+  };
+
+  if (isLoading || roleLoading) return <div className="p-8 text-center text-gray-500">Loading event data...</div>;
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
+  if (!isOrganizer && !isStaff) return null;
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
@@ -361,20 +396,46 @@ export default function EditEventPage() {
            </div>
          </div>
 
-        <div className="flex justify-end gap-4">
-          <Link
-             href={`/dashboard/events/${id}`}
-             className="px-8 py-3 rounded-full font-bold text-gray-600 hover:bg-gray-100 transition"
-          >
-            Discard
-          </Link>
+        <div className="flex justify-between items-center w-full">
           <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`px-8 py-3 rounded-full font-bold text-white shadow-lg transition transform ${isSubmitting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:shadow-xl hover:bg-blue-700 hover:-translate-y-0.5"}`}
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting || isSubmitting}
+            className={`px-6 py-3 rounded-full font-bold transition flex items-center ${
+              isDeleting ? "text-gray-400 cursor-not-allowed" : "text-red-600 hover:bg-red-50 hover:text-red-700"
+            }`}
           >
-            {isSubmitting ? "Updating..." : "Save Changes"}
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              ></path>
+            </svg>
+            {isDeleting ? "Deleting..." : "Delete Event"}
           </button>
+          
+          <div className="flex justify-end gap-4">
+            <Link
+               href={`/dashboard/events/${id}`}
+               className="px-8 py-3 rounded-full font-bold text-gray-600 hover:bg-gray-100 transition"
+            >
+              Discard
+            </Link>
+            <button
+              type="submit"
+              disabled={isSubmitting || isDeleting}
+              className={`px-8 py-3 rounded-full font-bold text-white shadow-lg transition transform ${isSubmitting || isDeleting ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:shadow-xl hover:bg-blue-700 hover:-translate-y-0.5"}`}
+            >
+              {isSubmitting ? "Updating..." : "Save Changes"}
+            </button>
+          </div>
         </div>
       </form>
     </div>
