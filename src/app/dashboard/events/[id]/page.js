@@ -6,12 +6,14 @@ import { useAuth } from "react-oidc-context";
 import { getEvent } from '@/domain/domain';
 import EventImage from "@/Componentes/Common/EventImage";
 import Link from 'next/link';
+import { useEventRole } from '@/hooks/useEventRole';
 
 export default function EventDashboardDetails() {
     const params = useParams();
     const router = useRouter();
     const auth = useAuth();
     const { id } = params;
+    const { isOrganizer, isStaff, isLoading: roleLoading } = useEventRole(id);
 
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -37,7 +39,7 @@ export default function EventDashboardDetails() {
                     // Fallback: If user is not the organizer (404/403), redirect them to the public attendee view
                     if (err.message?.includes('404') || err.message?.includes('403') || err.message?.includes('Not Found') || err.message?.includes('Forbidden')) {
                         console.log("Redirecting to public attendee view...");
-                        router.push(`/events/${id}`);
+                        router.push(`/events/${id}?source=dashboard`);
                         return;
                     }
                     setError("Failed to load event details.");
@@ -51,7 +53,7 @@ export default function EventDashboardDetails() {
         }
     }, [auth.isAuthenticated, auth.user?.access_token, auth.isLoading, id]);
 
-    if (loading) return <div className="p-8 text-center">Loading event details...</div>;
+    if (loading || roleLoading) return <div className="p-8 text-center">Loading event details...</div>;
     if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
     if (!event) return <div className="p-8 text-center">Event not found</div>;
 
@@ -65,9 +67,11 @@ export default function EventDashboardDetails() {
                     <h2 className="text-2xl font-bold text-gray-800">Manage Event</h2>
                 </div>
                 <div className="space-x-4">
-                     <Link href={`/dashboard/events/${id}/edit`} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        Edit Event
-                     </Link>
+                     {(isOrganizer || isStaff) && (
+                         <Link href={`/dashboard/events/${id}/edit`} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                            Edit Event
+                         </Link>
+                     )}
                 </div>
             </div>
 
