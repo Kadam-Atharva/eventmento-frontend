@@ -10,9 +10,9 @@ export default function EventCard({ event, footer }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition flex flex-col h-full">
       <div className="h-48 bg-gray-100 relative shrink-0">
-        <EventImage 
-          src={event.coverImage} 
-          alt={event.name} 
+        <EventImage
+          src={event.coverImage}
+          alt={event.name}
           className="w-full h-full object-cover"
         />
         <div className="absolute top-4 right-4">
@@ -33,7 +33,7 @@ export default function EventCard({ event, footer }) {
             {event.start ? new Date(event.start).toLocaleDateString() : "TBD"}
           </p>
           <h3 className="text-lg font-bold text-gray-900 mb-1">{event.name}</h3>
-          
+
           <p className="text-sm text-gray-600 mb-2 line-clamp-2">
             {event.description || "No description provided."}
           </p>
@@ -74,7 +74,11 @@ export default function EventCard({ event, footer }) {
               Ticket Types
             </span>
             <Link
-              href={isOrganizer ? `/dashboard/events/${event.id}` : `/events/${event.id}`}
+              href={
+                isOrganizer
+                  ? `/dashboard/events/${event.id}`
+                  : `/events/${event.id}?source=dashboard`
+              }
               className="text-blue-600 font-medium hover:text-blue-700"
             >
               {isOrganizer ? "Manage" : "View Details"}
@@ -85,4 +89,3 @@ export default function EventCard({ event, footer }) {
     </div>
   );
 }
-
