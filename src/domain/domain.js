@@ -143,6 +143,29 @@ export const getEvent = async (accessToken, id) => {
   }
 };
 
+export const getEventRole = async (accessToken, id) => {
+  const response = await fetch(`/api/v1/events/${id}/my-role`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const responseBody = await response.json();
+
+  if (!response.ok) {
+    if (isErrorResponse(responseBody)) {
+      throw new Error(responseBody.error);
+    } else {
+      console.error(JSON.stringify(responseBody));
+      throw new Error("An unknown error occurred");
+    }
+  }
+
+  return responseBody;
+};
+
 export const deleteEvent = async (accessToken, id) => {
   const response = await fetch(`/api/v1/events/${id}`, {
     method: "DELETE",

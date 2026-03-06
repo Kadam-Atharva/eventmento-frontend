@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "react-oidc-context";
 import { getPublishedEvent, purchaseTicket } from "@/domain/domain";
 import EventImage from "@/Componentes/Common/EventImage";
 
-export default function EventDetailsPage() {
+function EventDetailsContent() {
   const params = useParams();
   const router = useRouter();
   const auth = useAuth();
+  const searchParams = useSearchParams();
   const { id } = params;
+  
+  const source = searchParams.get('source');
+  const backNavigationPath = source === 'dashboard' ? '/dashboard' : '/';
+  const backNavigationText = source === 'dashboard' ? 'Back to Dashboard' : 'Back to Home';
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -111,10 +116,10 @@ export default function EventDetailsPage() {
             {error || "The event you are looking for does not exist."}
           </p>
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push(backNavigationPath)}
             className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
-            Back to Home
+            {backNavigationText}
           </button>
         </div>
       </div>
@@ -127,7 +132,7 @@ export default function EventDetailsPage() {
       <div className="relative h-96 w-full bg-gray-900">
         <div className="absolute top-6 left-6 z-20">
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push(backNavigationPath)}
             className="flex items-center text-white/80 hover:text-white bg-black/30 hover:bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm transition-all"
           >
             <svg
@@ -143,7 +148,7 @@ export default function EventDetailsPage() {
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               ></path>
             </svg>
-            Back to Home
+            {backNavigationText}
           </button>
         </div>
         <EventImage
@@ -324,5 +329,13 @@ export default function EventDetailsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function EventDetailsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex justify-center items-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>}>
+      <EventDetailsContent />
+    </Suspense>
   );
 }
