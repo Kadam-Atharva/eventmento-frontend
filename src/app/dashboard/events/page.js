@@ -20,7 +20,7 @@ export default function EventsPage() {
             if (auth.isAuthenticated && auth.user?.access_token) {
                 try {
                     const decoded = jwtDecode(auth.user.access_token);
-                    const roles = decoded.realm_access?.roles || [];
+                    const roles = decoded.roles || decoded.authorities || decoded.realm_access?.roles || [];
                     
                     let response;
                     if (roles.includes('ROLE_ORGANIZER') || roles.includes('ROLE_ADMIN')) {

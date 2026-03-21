@@ -12,6 +12,7 @@ import SearchEvents from "@/Componentes/Dashboard/SearchEvents";
 export default function DashboardPage() {
   const auth = useAuth();
   const [recentEvents, setRecentEvents] = useState([]);
+  const [globalEvents, setGlobalEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isOrganizer, setIsOrganizer] = useState(false);
 
@@ -20,24 +21,25 @@ export default function DashboardPage() {
       if (auth.isAuthenticated && auth.user?.access_token) {
         try {
           const decoded = jwtDecode(auth.user.access_token);
-          const roles = decoded.realm_access?.roles || [];
-          const orgOrAdmin =
-            roles.includes("ROLE_ORGANIZER") || roles.includes("ROLE_ADMIN");
+          // To be robust against different custom backends
+          const roles = decoded.roles || decoded.authorities || decoded.realm_access?.roles || [];
+          const orgOrAdmin = roles.includes("ROLE_ORGANIZER") || roles.includes("organizer") || roles.includes("ROLE_ADMIN") || roles.includes("admin");
           setIsOrganizer(orgOrAdmin);
 
-          let response;
+          // Fetch global events for everyone
+          const globalResponse = await listPublishedEvents();
+          const globalList = Array.isArray(globalResponse) ? globalResponse : globalResponse.content || [];
+          setGlobalEvents(globalList.slice(0, 6));
+
           // Check if user is an Organizer or Admin
           if (orgOrAdmin) {
-            response = await listEvents(auth.user.access_token);
+            const response = await listEvents(auth.user.access_token);
+            const eventsList = Array.isArray(response) ? response : response.content || [];
+            setRecentEvents(eventsList.slice(0, 6));
           } else {
-            response = await listPublishedEvents();
+            // Attendees just see global events on their dashboard overview
+            setRecentEvents([]);
           }
-
-          // Handle both paginated (legacy) and non-paginated (new) responses
-          const eventsList = Array.isArray(response)
-            ? response
-            : response.content || [];
-          setRecentEvents(eventsList.slice(0, 5));
         } catch (error) {
           console.error("Failed to fetch recent events:", error);
         } finally {
@@ -146,25 +148,45 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Recent Events Section */}
+      {/* Organizer's Recent Events Section */}
+      {isOrganizer && (
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-bold text-gray-800">My Recent Events</h2>
+            <Link
+              href="/dashboard/events"
+              className="text-blue-600 text-sm font-medium hover:text-blue-700 transition"
+            >
+              View All
+            </Link>
+          </div>
+          {recentEvents.length === 0 ? (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
+              <p className="text-gray-500">No recent events found.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentEvents.map((event) => (
+                <EventCard key={`my-${event.id}`} event={event} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Global Events Section */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-gray-800">Recent Events</h2>
-          <Link
-            href="/dashboard/events"
-            className="text-blue-600 text-sm font-medium hover:text-blue-700 transition"
-          >
-            View All
-          </Link>
+          <h2 className="text-lg font-bold text-gray-800">Explore Global Events</h2>
         </div>
-        {recentEvents.length === 0 ? (
+        {globalEvents.length === 0 ? (
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
-            <p className="text-gray-500">No recent events found.</p>
+            <p className="text-gray-500">No global events available right now.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
+            {globalEvents.map((event) => (
+              <EventCard key={`global-${event.id}`} event={event} />
             ))}
           </div>
         )}
