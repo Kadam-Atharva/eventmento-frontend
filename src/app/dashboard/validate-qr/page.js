@@ -49,7 +49,17 @@ export default function ValidateQrPage() {
       }
     } catch (error) {
       console.error("Validation failed:", error);
-      setValidationResult({ ticketId: ticketId, status: "INVALID" });
+      
+      let errorMsg = error.message;
+      if (errorMsg.includes("403")) {
+          errorMsg = "You do not have permission to validate tickets for this event.";
+      }
+      
+      setValidationResult({ 
+          ticketId: ticketId, 
+          status: "INVALID", 
+          error: errorMsg || "Invalid ticket or unauthorized" 
+      });
     } finally {
       setIsValidating(false);
 
@@ -193,6 +203,11 @@ export default function ValidateQrPage() {
             <p className="text-sm font-medium opacity-80 mb-4 font-mono">
               {validationResult.ticketId}
             </p>
+            {validationResult.error && (
+               <p className="text-sm font-semibold mt-1 mb-4">
+                 {validationResult.error}
+               </p>
+            )}
 
             <button
               onClick={() => {

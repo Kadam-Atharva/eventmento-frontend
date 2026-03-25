@@ -85,7 +85,15 @@ export default function TicketsPage() {
 
         } catch (error) {
              console.error("Validation failed:", error);
-             setValidationResult({ ticketId: ticketId, status: 'INVALID' });
+             let errorMsg = error.message;
+             if (errorMsg.includes("403")) {
+                 errorMsg = "You do not have permission to validate tickets for this event.";
+             }
+             setValidationResult({ 
+                 ticketId: ticketId, 
+                 status: 'INVALID',
+                 error: errorMsg || "Invalid ticket or unauthorized"
+             });
         }
     };
 
@@ -136,6 +144,9 @@ export default function TicketsPage() {
                         <div>
                             <p className="font-bold text-lg">{validationResult.status}</p>
                             <p className="text-sm opacity-80">Ticket ID: {validationResult.ticketId}</p>
+                            {validationResult.error && (
+                                <p className="text-sm font-semibold mt-1">{validationResult.error}</p>
+                            )}
                         </div>
                     </div>
                 )}
