@@ -24,7 +24,7 @@ export const useRoles = () => {
 
     try {
       const payload = jwtDecode(user?.access_token);
-      const allRoles = payload.realm_access?.roles || [];
+      const allRoles = payload.roles || payload.authorities || payload.realm_access?.roles || [];
       // Filter for specific app roles if needed, or just use all
       const filteredRoles = allRoles; 
       // The user snippet checked for "starts with ROLE_", but Keycloak usually returns plain roles or namespaced.
