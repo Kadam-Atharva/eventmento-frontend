@@ -1,23 +1,23 @@
 
-export const EventStatusEnum = {
-    DRAFT: "DRAFT",
-    PUBLISHED: "PUBLISHED",
-    CANCELLED: "CANCELLED",
-    COMPLETED: "COMPLETED",
-};
+// export const EventStatusEnum = {
+//     DRAFT: "DRAFT",
+//     PUBLISHED: "PUBLISHED",
+//     CANCELLED: "CANCELLED",
+//     COMPLETED: "COMPLETED",
+// };
 
-export const TicketStatus = {
-    PURCHASED: "PURCHASED",
-    CANCELLED: "CANCELLED",
-};
+// export const TicketStatus = {
+//     PURCHASED: "PURCHASED",
+//     CANCELLED: "CANCELLED",
+// };
 
-export const TicketValidationMethod = {
-    QR_SCAN: "QR_SCAN",
-    MANUAL: "MANUAL",
-};
+// export const TicketValidationMethod = {
+//     QR_SCAN: "QR_SCAN",
+//     MANUAL: "MANUAL",
+// };
 
-export const TicketValidationStatus = {
-    VALID: "VALID",
-    INVALID: "INVALID",
-    EXPIRED: "EXPIRED",
-};
+// export const TicketValidationStatus = {
+//     VALID: "VALID",
+//     INVALID: "INVALID",
+//     EXPIRED: "EXPIRED",
+// };
